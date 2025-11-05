@@ -1,0 +1,24 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            // Configuration pour exécuter le fichier actuellement ouvert
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            // Configuration pour lancer le jeu Flappy Bird via la classe Main
+            "type": "java",
+            "name": "Lancer FlappyBird (Main)",
+            "request": "launch",
+            // Assurez-vous que c'est bien la classe qui contient 'main(String[] args)'
+            "mainClass": "jeu.Main", 
+            // Remplacer "projectName": "Jeu_3ba12944" par une valeur vide 
+            // ou le nom exact de votre projet VS Code si 'jeu.Main' ne suffit pas.
+            // On laisse 'projectName' vide par défaut pour plus de flexibilité.
+            "projectName": "" 
+        }
+    ]
+}
