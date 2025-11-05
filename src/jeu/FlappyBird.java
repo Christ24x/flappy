@@ -133,7 +133,7 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
         g.drawImage(backgroundImg, 0, 0, boardWidth, boardHeight, null);
         
         // Hêvi (l'oiseau)
-        g.drawImage(bird.img, bird.x, bird.y, bird.width, bird.height, null);
+        g.drawImage(bird.getImg(), bird.getX(), bird.getY(), bird.getWidth(), bird.getHeight(), null);
         
         // Tuyaux
         for (int i = 0; i < pipes.size(); i++) {
@@ -172,7 +172,7 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
         }
 
         // Détection de la collision avec le sol
-        if (bird.y + bird.height > boardHeight) {
+        if (bird.getY() + bird.getHeight() > boardHeight) {
             gameOver = true;
         }
 
