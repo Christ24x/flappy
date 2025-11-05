@@ -28,10 +28,12 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
     private int gap = boardHeight / 4;
 
     // Constantes des tuyaux
-    int pipeX = boardWidth;
-    int pipeY = 0;
-    int pipeWidth = 250; // Largeur de tuyau ajustée
-    int pipeHeight = 512;
+    private int maxPipeHeight = 512;
+    private int minPipeHeight = 50;
+    // int pipeX = boardWidth;
+    // int pipeY = 0;
+    private int pipeWidth = 250; // Largeur de tuyau ajustée
+    // int pipeHeight = 512;
 
 
     // ------------------------------------
@@ -64,7 +66,7 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
 
         // Chargement des images
         backgroundImg = new ImageIcon(getClass().getResource("./bground.jpg")).getImage();
-        birdImg = new ImageIcon(getClass().getResource("./flappy.png")).getImage();
+        this.birdImg = new ImageIcon(getClass().getResource("./flappy.png")).getImage();
         topPipeImg = new ImageIcon(getClass().getResource("./thaut.png")).getImage();
         bottomPipeImg = new ImageIcon(getClass().getResource("./tbas.png")).getImage();
 
@@ -94,15 +96,14 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
     // ------------------------------------
     public void 
     placePipes() {
-        int openingSpace = boardHeight / 4; // Espace d'ouverture
         
         // Plage de hauteur aléatoire jouable
-        int maxRandomY = (int) (pipeHeight * 0.3); 
-        int minRandomY = (int) (pipeHeight * 0.7); 
-        int randomPipeY = (int) (pipeY - minRandomY + random.nextInt(maxRandomY));
+        int randomInterval = this.maxPipeHeight - this.minPipeHeight;
+
+        int topPipeHeight = this.minPipeHeight + random.nextInt(randomInterval);
 
         // Tuyau du haut
-        Pipe topPipe = new Pipe(topPipeImg);
+        Pipe topPipe = new Pipe(topPipeImg, 0, 0, this.pipeWidth, topPipeHeight);
         topPipe.y = randomPipeY;
         pipes.add(topPipe);
 
