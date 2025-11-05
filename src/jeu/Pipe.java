@@ -1,8 +1,13 @@
+package jeu;
+
+import java.awt.Image;
+import java.awt.Rectangle;
+
 class Pipe {
-    int x = pipeX;
-    int y = pipeY;
-    int width = pipeWidth;
-    int height = pipeHeight;
+    int x;
+    int y;
+    int width;
+    int height;
     Image img;
     boolean passed = false;
 
@@ -14,6 +19,6 @@ class Pipe {
         this.height = height;
 
         // Création du rectangle
-        return new Rectangle(x, y, width, height);
+        new Rectangle(x, y, width, height);
     }
 }
