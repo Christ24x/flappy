@@ -7,23 +7,25 @@ import java.util.Random;
 import javax.swing.*;
 
 public class FlappyBird extends JPanel implements ActionListener, KeyListener {
-    // ------------------------------------
-    // 1. CONFIGURATION DU JEU ET DIMENSIONS
-    // ------------------------------------
-    int boardWidth = 360;
-    int boardHeight = 640;
     
+    // Infos fenêtre
+    private int boardWidth = 360;
+    private int boardHeight = 640;
+
     // Images
     Image backgroundImg;
-    Image birdImg;
+    private Image birdImg;
     Image topPipeImg;
     Image bottomPipeImg;
 
     // Constantes de l'oiseau
-    int birdx = boardWidth / 8;
-    int birdy = boardHeight / 2;
-    int birdWidth = 90;
-    int birdHeight = 80;
+    private int birdX = boardWidth / 8;
+    private int birdY = boardHeight / 2;
+    private int birdWidth = 90;
+    private int birdHeight = 80;
+
+    // Infos sur la disposition des tuyaux
+    private int gap = boardHeight / 4;
 
     // Constantes des tuyaux
     int pipeX = boardWidth;
@@ -31,43 +33,6 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
     int pipeWidth = 250; // Largeur de tuyau ajustée
     int pipeHeight = 512;
 
-    // ------------------------------------
-    // 2. CLASSES INTERNES
-    // ------------------------------------
-    class Bird {
-        int x = birdx;
-        int y = birdy;
-        int width = birdWidth;
-        int height = birdHeight;
-        Image img;
-
-        Bird(Image img) {
-            this.img = img;
-        }
-
-        // Retourne le rectangle de collision
-        public Rectangle getBounds() {
-            return new Rectangle(x, y, width, height);
-        }
-    }
-
-    class Pipe {
-        int x = pipeX;
-        int y = pipeY;
-        int width = pipeWidth;
-        int height = pipeHeight;
-        Image img;
-        boolean passed = false;
-
-        Pipe(Image img) {
-            this.img = img;
-        }
-
-        // Retourne le rectangle de collision
-        public Rectangle getBounds() {
-            return new Rectangle(x, y, width, height);
-        }
-    }
 
     // ------------------------------------
     // 3. LOGIQUE GLOBALE DU JEU
@@ -92,6 +57,7 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
     // 4. CONSTRUCTEUR
     // ------------------------------------
     FlappyBird() {
+
         setPreferredSize(new Dimension(boardWidth, boardHeight));
         setFocusable(true);
         addKeyListener(this);
@@ -103,7 +69,7 @@ public class FlappyBird extends JPanel implements ActionListener, KeyListener {
         bottomPipeImg = new ImageIcon(getClass().getResource("./tbas.png")).getImage();
 
         // Initialisation des objets
-        bird = new Bird(birdImg);
+        bird = new Bird(this.birdImg, this.birdX, this.birdY, this.birdWidth, this.birdHeight);
         pipes = new ArrayList<Pipe>();
 
         // Timer pour l'apparition des tuyaux
