@@ -1,5 +1,3 @@
-package jeu;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
@@ -7,259 +5,216 @@ import java.util.Random;
 import javax.swing.*;
 
 public class FlappyBird extends JPanel implements ActionListener, KeyListener {
-    
-    // Infos fenêtre
-    private int boardWidth = 360;
-    private int boardHeight = 640;
+    int boardWidth = 360;
+    int boardHeight = 640;
 
-    // Images
+    //images
     Image backgroundImg;
-    private Image birdImg;
+    Image birdImg;
     Image topPipeImg;
     Image bottomPipeImg;
 
-    // Constantes de l'oiseau
-    private int birdX = boardWidth / 8;
-    private int birdY = boardHeight / 2;
-    private int birdWidth = 90;
-    private int birdHeight = 80;
+    //classe oiseau
+    int birdX = boardWidth/8;
+    int birdY = boardHeight/2;
+    int birdWidth = 34;
+    int birdHeight = 24;
 
-    // Infos sur la disposition des tuyaux
-    private int gap = boardHeight / 4;
+    class Bird {
+        int x = birdX;
+        int y = birdY;
+        int width = birdWidth;
+        int height = birdHeight;
+        Image img;
 
-    // Constantes des tuyaux
-    private int maxPipeHeight = 512;
-    private int minPipeHeight = 50;
-    // int pipeX = boardWidth;
-    // int pipeY = 0;
-    private int pipeWidth = 250; // Largeur de tuyau ajustée
-    // int pipeHeight = 512;
+        Bird(Image img) {
+            this.img = img;
+        }
+    }
 
-
-    // ------------------------------------
-    // 3. LOGIQUE GLOBALE DU JEU
-    // ------------------------------------
-    Bird bird;
-    int velocityX = -3; // Vitesse de défilement des tuyaux
-    int velocityY = 0;
-    int gravity = 1;
+    //classe tuyau
+    int pipeX = boardWidth;
+    int pipeY = 0;
+    int pipeWidth = 64;  //mis à l'échelle par 1/6
+    int pipeHeight = 512;
     
+    class Pipe {
+        int x = pipeX;
+        int y = pipeY;
+        int width = pipeWidth;
+        int height = pipeHeight;
+        Image img;
+        boolean passed = false; //indique si l'oiseau a passé ce tuyau
+
+        Pipe(Image img) {
+            this.img = img;
+        }
+    }
+
+    //logique du jeu
+    Bird bird;
+    int velocityX = -4; //vitesse de déplacement des tuyaux vers la gauche (simule l'oiseau avançant)
+    int velocityY = 0; //vitesse de déplacement de l'oiseau vers le haut/bas.
+    int gravity = 1;
+
     ArrayList<Pipe> pipes;
     Random random = new Random();
 
-    Timer gameLoop;
-    Timer placePipesTimer;
-
-    // Variables d'état et de score
+    Timer gameLoop; //boucle de jeu
+    Timer placePipeTimer; //minuteur pour placer les tuyaux
     boolean gameOver = false;
-    boolean gameStarted = false;
     double score = 0;
 
-    // ------------------------------------
-    // 4. CONSTRUCTEUR
-    // ------------------------------------
     FlappyBird() {
-
         setPreferredSize(new Dimension(boardWidth, boardHeight));
+        // met la couleur de fond en bleu (commenté)
         setFocusable(true);
         addKeyListener(this);
 
-        // Chargement des images
-        backgroundImg = new ImageIcon(getClass().getResource("./bground.jpg")).getImage();
-        this.birdImg = new ImageIcon(getClass().getResource("./flappy.png")).getImage();
-        topPipeImg = new ImageIcon(getClass().getResource("./thaut.png")).getImage();
-        bottomPipeImg = new ImageIcon(getClass().getResource("./tbas.png")).getImage();
+        //charger les images
+        backgroundImg = new ImageIcon(getClass().getResource("./flappybirdbg.png")).getImage();
+        birdImg = new ImageIcon(getClass().getResource("./flappybird.png")).getImage();
+        topPipeImg = new ImageIcon(getClass().getResource("./toppipe.png")).getImage();
+        bottomPipeImg = new ImageIcon(getClass().getResource("./bottompipe.png")).getImage();
 
-        // Initialisation des objets
-        bird = new Bird(this.birdImg, this.birdX, this.birdY, this.birdWidth, this.birdHeight);
+        //oiseau
+        bird = new Bird(birdImg);
         pipes = new ArrayList<Pipe>();
 
-        // Timer pour l'apparition des tuyaux
-        placePipesTimer = new Timer(1500, new ActionListener() {
+        //minuteur pour placer les tuyaux
+        placePipeTimer = new Timer(1500, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Les tuyaux n'apparaissent que si le jeu est démarré et non terminé
-                if (!gameOver && gameStarted) {
-                    placePipes();
-                }
+              // Code à exécuter
+              placePipes();
             }
         });
-        placePipesTimer.start(); 
-
-        // Game timer (boucle principale)
-        gameLoop = new Timer(20, this);
+        placePipeTimer.start();
+        
+        //minuteur de jeu
+        gameLoop = new Timer(1000/60, this); //temps nécessaire pour démarrer le minuteur, millisecondes entre les frames
         gameLoop.start();
     }
-
-    // ------------------------------------
-    // 5. CRÉATION DES TUYAUX
-    // ------------------------------------
-    public void 
-    placePipes() {
-        
-        // Plage de hauteur aléatoire jouable
-        int randomInterval = this.maxPipeHeight - this.minPipeHeight;
-
-        int topPipeHeight = this.minPipeHeight + random.nextInt(randomInterval);
-        int pipeX = this.boardWidth;
-
-        // Tuyau du haut
-        Pipe topPipe = new Pipe(topPipeImg, pipeX, 0, this.pipeWidth, topPipeHeight);
+    
+    void placePipes() {
+        // La hauteur des tuyaux sera dans la plage [-3/4 pipeHeight, -1/4 pipeHeight]
+        int randomPipeY = (int) (pipeY - pipeHeight/4 - Math.random()*(pipeHeight/2));
+        int openingSpace = boardHeight/4; //espace d'ouverture entre les tuyaux
+    
+        Pipe topPipe = new Pipe(topPipeImg);
+        topPipe.y = randomPipeY;
         pipes.add(topPipe);
-
-        // Tuyau du bas
-
-        // Calcul de la hauteur de la pipe du bas
-        int bottomPipeHeight = this.boardHeight - topPipeHeight - this.gap;
-
-        // Calcul de la coordonnée Y de la pipe du bas
-        int bottomPipeY = topPipeHeight + this.gap;
-
-        // Création de la pipe du bas
-        Pipe bottomPipe = new Pipe(bottomPipeImg, pipeX, bottomPipeY, this.pipeWidth, bottomPipeHeight);
+    
+        Pipe bottomPipe = new Pipe(bottomPipeImg);
+        bottomPipe.y = topPipe.y + pipeHeight + openingSpace;
         pipes.add(bottomPipe);
     }
-
-    // ------------------------------------
-    // 6. DESSIN
-    // ------------------------------------
+    
+    
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         draw(g);
     }
 
     public void draw(Graphics g) {
-        // Arrière-plan
-        g.drawImage(backgroundImg, 0, 0, boardWidth, boardHeight, null);
-        
-        // Hêvi (l'oiseau)
-        g.drawImage(bird.getImg(), bird.getX(), bird.getY(), bird.getWidth(), bird.getHeight(), null);
-        
-        // Tuyaux
+        //arrière-plan
+        g.drawImage(backgroundImg, 0, 0, this.boardWidth, this.boardHeight, null);
+
+        //oiseau
+        g.drawImage(birdImg, bird.x, bird.y, bird.width, bird.height, null);
+
+        //tuyaux
         for (int i = 0; i < pipes.size(); i++) {
             Pipe pipe = pipes.get(i);
             g.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height, null);
         }
-        
-        // Affichage du Score et Game Over
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 32));
-        
+
+        //score
+        g.setColor(Color.white);
+
+        g.setFont(new Font("Arial", Font.PLAIN, 32));
         if (gameOver) {
-            // Affichage du score final et du message de redémarrage
-            g.drawString("GAME OVER : " + (int) score, 10, 50);
-            g.setColor(Color.YELLOW);
-            g.setFont(new Font("Arial", Font.BOLD, 24));
-            g.drawString("Appuyez sur ESPACE pour rejouer", boardWidth / 2 - 170, boardHeight / 2);
-            
-        } else {
-            // Affichage du score en temps réel
-            g.drawString(String.valueOf((int) score), boardWidth / 2 - 10, 50);
+            g.drawString("Game Over: " + String.valueOf((int) score), 10, 35);
         }
+        else {
+            g.drawString(String.valueOf((int) score), 10, 35);
+        }
+        
     }
 
-    // ------------------------------------
-    // 7. LOGIQUE DE JEU (MOVE)
-    // ------------------------------------
     public void move() {
-        if (gameOver) return; 
+        //oiseau
+        velocityY += gravity;
+        bird.y += velocityY;
+        //appliquer la gravité au bird.y actuel, limiter le bird.y au sommet du canevas
+        bird.y = Math.max(bird.y, 0); 
 
-        // Mouvement vertical de l'oiseau (gravité)
-        if (gameStarted) {
-            velocityY += gravity;
-            bird.y += velocityY;
-            bird.y = Math.max(bird.y, 0); // Limite supérieure
-        }
-
-        // Détection de la collision avec le sol
-        if (bird.getY() + bird.getHeight() > boardHeight) {
-            gameOver = true;
-        }
-
-        // Mouvement, score et collision des tuyaux
+        //tuyaux
         for (int i = 0; i < pipes.size(); i++) {
             Pipe pipe = pipes.get(i);
-            
-            // CORRECTION: Le mouvement horizontal ne se fait que si le jeu est démarré
-            if (gameStarted) {
-                pipe.x += velocityX; 
-            }
+            pipe.x += velocityX;
 
-            // Détection de la collision
-            if (collision(bird, pipe)) {
-                gameOver = true;
-            }
-
-            // CORRECTION: Calcul du score uniquement si le jeu est démarré
-            if (gameStarted && pipe.x + pipe.width < bird.x && !pipe.passed && pipe.img == topPipeImg) {
+            if (!pipe.passed && bird.x > pipe.x + pipe.width) {
+                //0.5 car il y a 2 tuyaux ! donc 0.5*2 = 1, 1 pour chaque paire de tuyaux
                 score += 0.5; 
                 pipe.passed = true;
             }
+
+            if (collision(bird, pipe)) {
+                gameOver = true;
+            }
+        }
+
+        if (bird.y > boardHeight) {
+            gameOver = true;
         }
     }
 
-    // ------------------------------------
-    // 8. DÉTECTION DE COLLISION
-    // ------------------------------------
-    public boolean collision(Bird a, Pipe b) {
-        // Utilisation de la méthode intersects pour une vérification fiable
-        return a.getBounds().intersects(b.getBounds());
-    }
-    
-    // ------------------------------------
-    // 9. RÉINITIALISATION DU JEU
-    // ------------------------------------
-    public void resetGame() {
-        // Réinitialisation de l'oiseau
-        bird.y = birdy;
-        velocityY = 0;
-        
-        // Réinitialisation de l'état
-        pipes.clear();
-        score = 0;
-        gameOver = false;
-        gameStarted = false;
-        
-        // Redémarrage des minuteurs
-        gameLoop.start();
-        placePipesTimer.start();
+    boolean collision(Bird a, Pipe b) {
+        //le coin supérieur gauche de 'a' n'atteint pas le coin supérieur droit de 'b'
+        return a.x < b.x + b.width &&  
+                //le coin supérieur droit de 'a' dépasse le coin supérieur gauche de 'b'
+               a.x + a.width > b.x &&  
+               //le coin supérieur gauche de 'a' n'atteint pas le coin inférieur gauche de 'b'
+               a.y < b.y + b.height &&  
+               //le coin inférieur gauche de 'a' dépasse le coin supérieur gauche de 'b'
+               a.y + a.height > b.y;    
     }
 
-    // ------------------------------------
-    // 10. GESTION DES ÉVÉNEMENTS (LISTENERS)
-    // ------------------------------------
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent e) { 
+        //appelé toutes les x millisecondes par le minuteur gameLoop
         move();
         repaint();
-        
-        // Arrêt des minuteurs si Game Over
         if (gameOver) {
-            placePipesTimer.stop();
+            placePipeTimer.stop();
             gameLoop.stop();
         }
-    }
+    }  
 
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-            
+            // Affichage du saut (commenté)
+            velocityY = -9;
+
             if (gameOver) {
-                // Redémarre le jeu si Game Over
-                resetGame();
-                
-            } else {
-                // Lance le jeu au premier saut et applique l'impulsion
-                if (!gameStarted) {
-                    gameStarted = true;
-                }
-                velocityY = -9; // Impulsion de saut
+                //redémarrer le jeu en réinitialisant les conditions
+                bird.y = birdY;
+                velocityY = 0;
+                pipes.clear();
+                gameOver = false;
+                score = 0;
+                gameLoop.start();
+                placePipeTimer.start();
             }
         }
     }
-    
+
+    //pas nécessaire
     @Override
     public void keyTyped(KeyEvent e) {}
+
     @Override
     public void keyReleased(KeyEvent e) {}
 }
